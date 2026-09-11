@@ -1,4 +1,4 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://2.28.226.212'
+const API_BASE = '/api/proxy'
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
 
@@ -84,3 +84,4 @@ export async function approveJD(sessionId: string) {
 export async function requestChanges(sessionId: string, changes: string) {
   return sendMessage(sessionId, changes)
 }
+
