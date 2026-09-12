@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createSession, sendMessage, getToken, logout } from '@/lib/api'
+import ReactMarkdown from 'react-markdown'
 
 type Message = {
   id: string
@@ -343,8 +344,8 @@ export default function ChatPage() {
                             Draft
                           </span>
                         </div>
-                        <div className="text-gray-600 text-xs leading-relaxed whitespace-pre-wrap max-h-72 overflow-y-auto">
-                          {formatted.jd}
+                        <div className="text-gray-600 text-xs leading-relaxed max-h-72 overflow-y-auto prose prose-xs prose-gray max-w-none">
+                          <ReactMarkdown>{formatted.jd || ''}</ReactMarkdown>
                         </div>
                         <div className="flex gap-2 mt-4 pt-3 border-t border-gray-100">
                           <button
@@ -369,12 +370,12 @@ export default function ChatPage() {
                       </div>
                     </>
                   ) : (
-                    <div className={`px-4 py-3 rounded-xl text-sm leading-relaxed whitespace-pre-wrap ${
+                    <div className={`px-4 py-3 rounded-xl text-sm leading-relaxed ${
                       msg.role === 'user'
                         ? 'bg-violet-100 text-violet-900'
                         : 'bg-white border border-gray-200 text-gray-700'
                     }`}>
-                      {msg.content}
+                      <ReactMarkdown>{msg.content}</ReactMarkdown>
                     </div>
                   )}
 
