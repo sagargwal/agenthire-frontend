@@ -62,7 +62,10 @@ export async function createSession(message: string) {
     body: JSON.stringify({ initial_message: message }),
   })
   if (res.status === 401) throw new Error('unauthorized')
-  if (res.status === 429) throw new Error('token_limit')
+  if (res.status === 429) {
+    const data = await res.json()
+    throw new Error(`token_limit:${data.detail}`)
+  }
   if (!res.ok) throw new Error('Failed to create session')
   return res.json()
 }
@@ -74,7 +77,10 @@ export async function sendMessage(sessionId: string, message: string) {
     body: JSON.stringify({ message }),
   })
   if (res.status === 401) throw new Error('unauthorized')
-  if (res.status === 429) throw new Error('token_limit')
+  if (res.status === 429) {
+    const data = await res.json()
+    throw new Error(`token_limit:${data.detail}`)
+  }
   if (!res.ok) throw new Error('Failed to send message')
   return res.json()
 }

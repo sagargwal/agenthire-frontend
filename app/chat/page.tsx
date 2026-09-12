@@ -99,20 +99,25 @@ export default function ChatPage() {
         ))
       }
     } catch (err: unknown) {
-      if (err instanceof Error && err.message === 'unauthorized') {
-        router.push('/login')
-      } else if (err instanceof Error && err.message === 'token_limit') {
-        const limitMsg: Message = {
-          id: Date.now().toString(),
-          role: 'assistant',
-          content: '⚠️ You have reached your token limit. Contact the administrator for more access.',
-        }
-        if (activeSession) {
-          setSessions(prev => prev.map(s =>
-            s.id === activeSession
-              ? { ...s, messages: [...s.messages, limitMsg] }
-              : s
-          ))
+      if (err instanceof Error) {
+        if (err.message === 'unauthorized') {
+          router.push('/login')
+        } else if (err.message.startsWith('token_limit:')) {
+          const detail = err.message.replace('token_limit:', '')
+          const limitMsg: Message = {
+            id: Date.now().toString(),
+            role: 'assistant',
+            content: `⚠️ ${detail}`,
+          }
+          if (activeSession) {
+            setSessions(prev => prev.map(s =>
+              s.id === activeSession
+                ? { ...s, messages: [...s.messages, limitMsg] }
+                : s
+            ))
+          } else {
+            alert(detail)
+          }
         }
       }
     } finally {
@@ -152,8 +157,28 @@ export default function ChatPage() {
           ? { ...s, messages: [...s.messages, assistantMsg] }
           : s
       ))
-    } catch {
-      router.push('/login')
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        if (err.message === 'unauthorized') {
+          router.push('/login')
+        } else if (err.message.startsWith('token_limit:')) {
+          const detail = err.message.replace('token_limit:', '')
+          const limitMsg: Message = {
+            id: Date.now().toString(),
+            role: 'assistant',
+            content: `⚠️ ${detail}`,
+          }
+          if (activeSession) {
+            setSessions(prev => prev.map(s =>
+              s.id === activeSession
+                ? { ...s, messages: [...s.messages, limitMsg] }
+                : s
+            ))
+          } else {
+            alert(detail)
+          }
+        }
+      }
     } finally {
       setLoading(false)
       setInput('')
