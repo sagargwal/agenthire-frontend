@@ -254,28 +254,33 @@ export default function ChatPage() {
 
           {/* Empty state */}
           {!currentSession && (
-            <div className="flex flex-col items-center justify-center h-full text-center">
+            <div className="flex flex-col items-center justify-center h-full text-center px-8">
               <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center mb-4">
                 <div className="w-3 h-3 rounded-full bg-emerald-500" />
               </div>
               <h2 className="text-base font-medium text-gray-900 mb-2">
-                Start a new JD
+                What can I help with?
               </h2>
-              <p className="text-sm text-gray-400 max-w-xs">
-                Tell me which role you want to hire for. I'll look up the team context and draft a JD for your review.
+              <p className="text-sm text-gray-400 max-w-sm mb-8">
+                I have deep knowledge of Nexus Health — every team, tech stack, level definition,
+                and hiring history. Ask me anything about the company or start a JD.
               </p>
-              <div className="mt-6 space-y-2">
+
+              <div className="w-full max-w-lg grid grid-cols-2 gap-3 mb-6">
                 {[
-                  'I need an L4 for the Claims AI team',
-                  'We lost someone on the sepsis project',
-                  'I need a Senior Engineer for Clinical AI Lab',
-                ].map(suggestion => (
+                  { label: 'Build a JD', example: 'I need an L4 for the Claims AI team', icon: '📝' },
+                  { label: 'Find a team', example: 'We lost someone on the sepsis project', icon: '🔍' },
+                  { label: 'Query company', example: 'Which teams use Kafka?', icon: '🏢' },
+                  { label: 'Audit a JD', example: 'Is our 2021 L3 Claims AI JD still accurate?', icon: '✅' },
+                ].map(item => (
                   <button
-                    key={suggestion}
-                    onClick={() => { setInput(suggestion) }}
-                    className="block w-full text-left px-4 py-2.5 text-sm text-gray-600 bg-white border border-gray-200 rounded-lg hover:border-gray-300 hover:bg-gray-50 transition-colors"
+                    key={item.label}
+                    onClick={() => setInput(item.example)}
+                    className="text-left px-4 py-3 bg-white border border-gray-200 rounded-xl hover:border-gray-300 hover:bg-gray-50 transition-colors"
                   >
-                    {suggestion}
+                    <div className="text-base mb-1">{item.icon}</div>
+                    <div className="text-xs font-medium text-gray-700 mb-0.5">{item.label}</div>
+                    <div className="text-xs text-gray-400 leading-relaxed">{item.example}</div>
                   </button>
                 ))}
               </div>
