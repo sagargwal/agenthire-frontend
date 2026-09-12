@@ -310,8 +310,8 @@ export default function LoginPage() {
       <div className="hidden lg:flex flex-col w-[60%] relative overflow-hidden border-r border-white/10">
 
         {/* Slide content */}
-        <div className="flex-1 relative">
-          <div key={slide.id} className="absolute inset-0 animate-fade">
+        <div className="flex-1 overflow-hidden">
+          <div key={slide.id} className="h-full animate-fade">
             {slide.type === 'graphic' && slide.id === 'intro' && <SlideIntro />}
             {slide.type === 'graphic' && slide.id === 'capabilities' && <SlideCapabilities />}
             {slide.type === 'chat' && <SlideChat slide={slide} />}
