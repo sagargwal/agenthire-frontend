@@ -26,11 +26,20 @@ export default function ChatPage() {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [userName, setUserName] = useState('HR')
+  const [sendError, setSendError] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
     if (!getToken()) router.push('/login')
   }, [router])
+
+  useEffect(() => {
+    const el = textareaRef.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = `${Math.min(el.scrollHeight, 240)}px`
+  }, [input])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -44,20 +53,57 @@ export default function ChatPage() {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
   }
 
+  function reportError(err: unknown, sessionId: string | null) {
+    if (!(err instanceof Error)) return
+    if (err.message === 'unauthorized') {
+      router.push('/login')
+      return
+    }
+    const isLimit = err.message.startsWith('token_limit:')
+    const detail = isLimit
+      ? err.message.replace('token_limit:', '')
+      : 'Something went wrong. Please try again.'
+    if (sessionId) {
+      const errMsg: Message = {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: `⚠️ ${detail}`,
+      }
+      setSessions(prev => prev.map(s =>
+        s.id === sessionId
+          ? { ...s, messages: [...s.messages, errMsg] }
+          : s
+      ))
+    } else {
+      setSendError(detail)
+    }
+  }
+
   async function handleSend() {
     if (!input.trim() || loading) return
     const text = input.trim()
     setInput('')
+    setSendError('')
     setLoading(true)
+
+    let pendingId: string | null = null
 
     try {
       if (!activeSession) {
-        // create new session
+        // show the first message immediately in a temporary session
+        const tempId = `pending-${Date.now()}`
+        pendingId = tempId
         const userMsg: Message = {
           id: Date.now().toString(),
           role: 'user',
           content: text,
         }
+        setSessions(prev => [
+          { id: tempId, title: text.slice(0, 40), messages: [userMsg] },
+          ...prev,
+        ])
+        setActiveSession(tempId)
+
         const data = await createSession(text)
         const assistantMsg: Message = {
           id: (Date.now() + 1).toString(),
@@ -66,12 +112,11 @@ export default function ChatPage() {
           paused: data.paused,
           sessionId: data.session_id,
         }
-        const newSession: Session = {
-          id: data.session_id,
-          title: text.slice(0, 40),
-          messages: [userMsg, assistantMsg],
-        }
-        setSessions(prev => [newSession, ...prev])
+        setSessions(prev => prev.map(s =>
+          s.id === tempId
+            ? { ...s, id: data.session_id, messages: [...s.messages, assistantMsg] }
+            : s
+        ))
         setActiveSession(data.session_id)
       } else {
         // add user message immediately
@@ -100,26 +145,15 @@ export default function ChatPage() {
         ))
       }
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        if (err.message === 'unauthorized') {
-          router.push('/login')
-        } else if (err.message.startsWith('token_limit:')) {
-          const detail = err.message.replace('token_limit:', '')
-          const limitMsg: Message = {
-            id: Date.now().toString(),
-            role: 'assistant',
-            content: `⚠️ ${detail}`,
-          }
-          if (activeSession) {
-            setSessions(prev => prev.map(s =>
-              s.id === activeSession
-                ? { ...s, messages: [...s.messages, limitMsg] }
-                : s
-            ))
-          } else {
-            alert(detail)
-          }
-        }
+      if (pendingId) {
+        // no backend session exists — discard the temp one and restore the text
+        const failedId = pendingId
+        setSessions(prev => prev.filter(s => s.id !== failedId))
+        setActiveSession(null)
+        setInput(text)
+        reportError(err, null)
+      } else {
+        reportError(err, activeSession)
       }
     } finally {
       setLoading(false)
@@ -159,27 +193,7 @@ export default function ChatPage() {
           : s
       ))
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        if (err.message === 'unauthorized') {
-          router.push('/login')
-        } else if (err.message.startsWith('token_limit:')) {
-          const detail = err.message.replace('token_limit:', '')
-          const limitMsg: Message = {
-            id: Date.now().toString(),
-            role: 'assistant',
-            content: `⚠️ ${detail}`,
-          }
-          if (activeSession) {
-            setSessions(prev => prev.map(s =>
-              s.id === activeSession
-                ? { ...s, messages: [...s.messages, limitMsg] }
-                : s
-            ))
-          } else {
-            alert(detail)
-          }
-        }
-      }
+      reportError(err, activeSession)
     } finally {
       setLoading(false)
       setInput('')
@@ -372,10 +386,12 @@ export default function ChatPage() {
                   ) : (
                     <div className={`px-4 py-3 rounded-xl text-sm leading-relaxed ${
                       msg.role === 'user'
-                        ? 'bg-violet-100 text-violet-900'
+                        ? 'bg-violet-100 text-violet-900 whitespace-pre-wrap'
                         : 'bg-white border border-gray-200 text-gray-700'
                     }`}>
-                      <ReactMarkdown>{msg.content}</ReactMarkdown>
+                      {msg.role === 'user'
+                        ? msg.content
+                        : <ReactMarkdown>{msg.content}</ReactMarkdown>}
                     </div>
                   )}
 
@@ -428,6 +444,7 @@ export default function ChatPage() {
         <div className="bg-white border-t border-gray-100 px-6 py-4">
           <div className="flex gap-3 items-end">
             <textarea
+              ref={textareaRef}
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={e => {
@@ -439,7 +456,7 @@ export default function ChatPage() {
               placeholder="Describe the role you want to hire for…"
               rows={1}
               className="flex-1 px-4 py-3 text-sm border border-gray-200 rounded-xl outline-none focus:border-gray-400 resize-none bg-gray-50 text-gray-900 placeholder-gray-400"
-              style={{ minHeight: '44px', maxHeight: '120px' }}
+              style={{ minHeight: '44px', maxHeight: '240px' }}
             />
             <button
               onClick={handleSend}
@@ -452,6 +469,9 @@ export default function ChatPage() {
               </svg>
             </button>
           </div>
+          {sendError && (
+            <p className="text-xs text-red-500 mt-2">{sendError}</p>
+          )}
           <p className="text-xs text-gray-400 mt-2">
             Press Enter to send · Shift+Enter for new line
           </p>
