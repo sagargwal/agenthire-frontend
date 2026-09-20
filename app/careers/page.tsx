@@ -5,7 +5,7 @@
  
 import { useEffect, useState } from "react";
  
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://2.28.226.212:8000";
+const API_BASE = "/api/proxy";
  
 interface JobPosting {
   id: number;
