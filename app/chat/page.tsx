@@ -146,7 +146,7 @@ export default function ChatPage() {
 
   return (
     // ── Root: full viewport, no scroll ──
-    <div className="flex flex-col h-screen overflow-hidden bg-gray-50 font-sans">
+    <div className="flex flex-col bg-gray-50 font-sans" style={{ height: "100dvh", overflow: "hidden" }}>
 
       {/* ── Top bar — always visible, never scrolls away ── */}
       <div className="flex-shrink-0 bg-white border-b border-gray-100 px-3 sm:px-4 py-2.5 flex items-center justify-between z-10">
@@ -190,7 +190,7 @@ export default function ChatPage() {
             onClick={() => { setActiveSession(null); setInput('') }}
             className="text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 rounded-lg transition-colors flex-shrink-0"
           >
-            + New JD
+            + New conversation
           </button>
         </div>
       </div>
@@ -347,7 +347,7 @@ export default function ChatPage() {
                 placeholder="Describe the role you want to hire for…"
                 rows={1}
                 className="flex-1 px-3 py-2.5 text-sm border border-gray-200 rounded-xl outline-none focus:border-emerald-400 resize-none bg-gray-50 text-gray-900 placeholder-gray-400"
-                style={{ minHeight: '42px', maxHeight: '200px' }}
+                style={{ minHeight: '42px', maxHeight: '120px' }}
               />
               <button
                 onClick={handleSend}
@@ -361,7 +361,7 @@ export default function ChatPage() {
               </button>
             </div>
             {sendError && <p className="text-xs text-red-500 mt-1.5 max-w-3xl mx-auto">{sendError}</p>}
-            <p className="text-[10px] text-gray-400 mt-1 text-center">Enter to send · Shift+Enter for new line</p>
+            
           </div>
         </div>
       </div>
