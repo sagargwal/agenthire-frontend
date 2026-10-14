@@ -312,7 +312,7 @@ export default function ChatPage() {
                         <p className="text-xs text-amber-700 font-medium mb-2">Waiting for your approval to proceed</p>
                         <div className="flex gap-2">
                           <button onClick={() => handleSendWithText('Approved')} className="px-3 py-1.5 bg-emerald-600 text-white text-xs rounded-lg hover:bg-emerald-700">Approve</button>
-                          <button onClick={() => setInput('Please change ')} className="px-3 py-1.5 border border-gray-200 text-gray-500 text-xs rounded-lg hover:bg-gray-50">Request changes</button>
+                          <button onClick={() => handleSendWithText('Reject')} className="px-3 py-1.5 border border-gray-200 text-gray-500 text-xs rounded-lg hover:bg-gray-50">Reject</button>
                         </div>
                       </div>
                     )}
