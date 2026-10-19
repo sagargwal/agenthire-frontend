@@ -9,7 +9,8 @@ export async function login(email: string, password: string) {
     credentials: 'include',
     body: JSON.stringify({ email, password }),
   })
-  if (!res.ok) throw new Error('Invalid credentials')
+  if (res.status === 401) throw new Error('invalid_credentials')
+  if (!res.ok) throw new Error('server_error')
   return res.json()
 }
 

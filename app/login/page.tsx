@@ -176,8 +176,12 @@ export default function LoginPage() {
       const data = await login(email, password)
       setToken(data.access_token)
       router.push('/chat')
-    } catch {
-      setError('Invalid email or password')
+    } catch (err) {
+      setError(
+        err instanceof Error && err.message === 'invalid_credentials'
+          ? 'Invalid email or password'
+          : 'Server error, please try again'
+      )
     } finally {
       setLoading(false)
     }
